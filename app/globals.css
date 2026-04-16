@@ -128,3 +128,16 @@
     @apply font-sans;
   }
 }
+
+@layer base {
+  :root {
+    --input: 240 5.9% 90%; /* Switch o'chiq turgandagi rangi */
+    --primary: 240 5.9% 10%; /* Switch yoniq turgandagi rangi */
+    --background: 0 0% 100%; /* Thumb (dumaloqcha) rangi */
+  }
+
+  .dark {
+    --input: 240 3.7% 15.9%;
+    --primary: 0 0% 98%;
+  }
+}
