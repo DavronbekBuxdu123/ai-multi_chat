@@ -5,6 +5,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -29,6 +30,7 @@ function AiModelsList() {
     <div className="flex flex-1  h-[70vh]  border-b p-3">
       {aiModelsList.map((model, index) => (
         <div
+          key={index}
           className={`flex flex-col border-r h-full overflow-auto transition-all duration-500 ease-in-out  ${
             !model.enable ? "min-w-[100px]" : "min-w-[400px]"
           } `}
@@ -49,11 +51,30 @@ function AiModelsList() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {model.subModel.map((subModel) => (
-                        <SelectItem value={subModel.name}>
-                          {subModel.name}
-                        </SelectItem>
-                      ))}
+                      <SelectLabel>Free</SelectLabel>
+                      {model.subModel.map(
+                        (subModel, index) =>
+                          !subModel.premium && (
+                            <SelectItem key={index} value={subModel.name}>
+                              {subModel.name}
+                            </SelectItem>
+                          )
+                      )}
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Premium</SelectLabel>
+                      {model.subModel.map(
+                        (subModel, index) =>
+                          subModel.premium && (
+                            <SelectItem
+                              disabled={subModel.premium}
+                              key={index}
+                              value={subModel.name}
+                            >
+                              {subModel.name} <Lock />
+                            </SelectItem>
+                          )
+                      )}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
