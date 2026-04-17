@@ -36,6 +36,16 @@ export const AiModels = [
     ],
   },
   {
+    model: "Mistral",
+    icon: "/mistral.png",
+    premium: false,
+    enable: true,
+    subModel: [
+      { name: "Mistral Medium 2505", premium: false, id: "" },
+      { name: "Mistral Large", premium: true, id: "" },
+    ],
+  },
+  {
     model: "Grok",
     icon: "/grok.png",
     premium: true,

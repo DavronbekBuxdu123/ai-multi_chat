@@ -10,13 +10,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { AiModels } from "@/lists/AiModels";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AiModelSelectedContext } from "@/context/AiModelSelectedContext";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/config/FireBaseConfig";
+import { useUser } from "@clerk/nextjs";
 
 function AiModelsList() {
   const [aiModelsList, setAiModelList] = useState(AiModels);
+  const { user } = useUser();
+  const { selectedModel, setSelectedModel } = useContext(
+    AiModelSelectedContext
+  );
   const onToggleChange = async (targetmodel) => {
     setAiModelList((prev) =>
       prev.map((prevModel) =>
@@ -26,11 +34,21 @@ function AiModelsList() {
       )
     );
   };
+  const onSelectedValue = async (parentModal, value) => {
+    const newSelection = {
+      ...selectedModel,
+      [parentModal]: { modelId: value },
+    };
+    setSelectedModel(newSelection);
+    const docRef = doc(db, "users", user?.primaryEmailAddress?.emailAddress);
+    await updateDoc(docRef, { selectedModelRef: newSelection });
+  };
+
+  console.log(selectedModel);
   return (
     <div className="flex flex-1  h-[70vh]  border-b p-3">
       {aiModelsList.map((model, index) => (
         <div
-          key={index}
           className={`flex flex-col border-r h-full overflow-auto transition-all duration-500 ease-in-out  ${
             !model.enable ? "min-w-[100px]" : "min-w-[400px]"
           } `}
@@ -45,17 +63,22 @@ function AiModelsList() {
                 height={30}
               />
               {model.enable && !model.premium && (
-                <Select>
+                <Select
+                  onValueChange={(value) => onSelectedValue(model.model, value)}
+                  defaultValue={selectedModel[model.model]?.modelId}
+                >
                   <SelectTrigger className="w-[200px] px-3 h-10 ">
-                    <SelectValue placeholder={model.subModel[0].name} />
+                    <SelectValue
+                      placeholder={selectedModel[model.model]?.modelId}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Free</SelectLabel>
                       {model.subModel.map(
-                        (subModel, index) =>
+                        (subModel) =>
                           !subModel.premium && (
-                            <SelectItem key={index} value={subModel.name}>
+                            <SelectItem value={subModel.name}>
                               {subModel.name}
                             </SelectItem>
                           )
@@ -64,14 +87,14 @@ function AiModelsList() {
                     <SelectGroup>
                       <SelectLabel>Premium</SelectLabel>
                       {model.subModel.map(
-                        (subModel, index) =>
+                        (subModel) =>
                           subModel.premium && (
                             <SelectItem
                               disabled={subModel.premium}
-                              key={index}
                               value={subModel.name}
                             >
-                              {subModel.name} <Lock />
+                              {subModel.name}
+                              <Lock />
                             </SelectItem>
                           )
                       )}

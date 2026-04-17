@@ -6,6 +6,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/AppSidebar";
 import AppHeader from "./_components/AppHeader";
 import { ClerkProvider } from "@clerk/nextjs";
+import { AiModelProvider } from "@/context/AiModelSelectedContext";
+import { UserDetailProvider } from "@/context/UserDetailContext";
 
 const roboto = Roboto({
   weight: "400",
@@ -29,20 +31,24 @@ export default function RootLayout({
         className={`${roboto.className} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SidebarProvider>
-              <AppSidebar />
-              <main className="w-full">
-                <AppHeader />
-                {children}
-              </main>
-            </SidebarProvider>
-          </ThemeProvider>
+          <AiModelProvider>
+            <UserDetailProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <SidebarProvider>
+                  <AppSidebar />
+                  <main className="w-full">
+                    <AppHeader />
+                    {children}
+                  </main>
+                </SidebarProvider>
+              </ThemeProvider>
+            </UserDetailProvider>
+          </AiModelProvider>
         </body>
       </html>
     </ClerkProvider>
