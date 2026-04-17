@@ -5,6 +5,8 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useUser } from "@clerk/nextjs";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/config/FireBaseConfig";
+import { AiModelSelectedContext } from "@/context/AiModelSelectedContext";
+import { UserDetailContext } from "@/context/UserDetailContext";
 
 export function ThemeProvider({
   children,
@@ -16,6 +18,11 @@ export function ThemeProvider({
       CreateNewUser();
     }
   }, [user]);
+
+  const { selectedModel, setSelectedModel } = React.useContext(
+    AiModelSelectedContext
+  );
+  const { userDetail, setUserDetail } = React.useContext(UserDetailContext);
   const CreateNewUser = async () => {
     const email = user?.primaryEmailAddress?.emailAddress;
     if (!email) {
@@ -25,6 +32,9 @@ export function ThemeProvider({
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
       console.log("Mavjud User");
+      const userInfo = userSnap.data();
+      setSelectedModel(userInfo?.selectedModelRef);
+      setUserDetail(userInfo);
       return;
     } else {
       const userData = {
@@ -36,10 +46,10 @@ export function ThemeProvider({
         credits: 1000,
       };
       await setDoc(userRef, userData);
+      setUserDetail(userData);
       console.log("User yaratildi!");
     }
   };
-  // CreateNewUser();
 
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }
