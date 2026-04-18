@@ -42,7 +42,7 @@ function AiModelsList() {
   const context = useContext(AiModelSelectedContext);
   const [activeTab, setActiveTab] = useState(AiModels[0].model);
 
-  if (!context) return <div className="p-5 text-center">Loading...</div>;
+  if (!context) return <div className="p-5 text-center">Loading..</div>;
 
   const { selectedModel, setSelectedModel, messages } = context;
 
