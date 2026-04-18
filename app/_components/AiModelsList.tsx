@@ -49,7 +49,7 @@ function AiModelsList() {
   const onToggleChange = async (targetmodel: AiModel) => {
     const newValue = !targetmodel.enable;
     setAiModelList((prev) =>
-      prev.map((m) =>
+      prev.map((m: AiModel) =>
         m.model === targetmodel.model ? { ...m, enable: newValue } : m
       )
     );
@@ -81,7 +81,7 @@ function AiModelsList() {
   };
 
   return (
-    <div className="flex flex-col flex-1 h-[75vh] border-b bg-background dark:bg-[#0d1225]">
+    <div className="flex flex-col flex-1 h-[75vh] border-b bg-background  dark:bg-[#0d1225]">
       <div className="md:hidden w-full p-2 border-b bg-card overflow-x-auto">
         <Tabs
           value={activeTab}
