@@ -1,35 +1,45 @@
 import { aj } from "@/config/ArcjetConfig";
 import { currentUser } from "@clerk/nextjs/server";
-
 import { NextRequest, NextResponse } from "next/server";
+// Arcjet'ning rasmiy turini import qilamiz
+import { ArcjetRateLimitReason } from "@arcjet/next";
 
 export async function POST(req: NextRequest) {
-  const user = currentUser();
-  const { token } = await req.json();
-  console.log(token);
-  if (token) {
+  try {
+    const user = await currentUser();
+    const body = await req.json();
+    const token = body.token;
+    const userId = user?.primaryEmailAddress?.emailAddress ?? "anonymous";
+    const getRemaining = (decision: any): number => {
+      if (decision.reason.isRateLimit()) {
+        return (decision.reason as ArcjetRateLimitReason).remaining;
+      }
+      return 0;
+    };
+
     const decision = await aj.protect(req, {
-      userId: user?.primaryEmailAddress?.emailAddress,
-      requested: token,
+      userId: userId,
+      requested: token ? Number(token) : 0,
     });
+
+    const remainingToken = getRemaining(decision);
+
     if (decision.isDenied()) {
-      return NextResponse.json({
-        error: "Juda ko'p urinish",
-        remainingToken: decision.reason.remaining,
-      });
+      return NextResponse.json(
+        {
+          error: "Juda ko'p urinish",
+          remainingToken,
+        },
+        { status: 429 }
+      );
     }
+
     return NextResponse.json({
       allowed: true,
-      remainingToken: decision.reason.remaining,
+      remainingToken,
     });
-  } else {
-    const decision = await aj.protect(req, {
-      userId: user?.primaryEmailAddress?.emailAddress,
-      requested: 0,
-    });
-    console.log("Arcjet decision", decision);
-    const remainingToken = decision.reason.remaining;
-
-    return NextResponse.json({ remainingToken: remainingToken });
+  } catch (error) {
+    console.error("Build Error:", error);
+    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
   }
 }
