@@ -7,43 +7,54 @@ import axios from "axios";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Mic, Paperclip, Send } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useContext, useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner"; // Sonner importi
 
 function ChatInputBox() {
   const [userInput, setUserInput] = useState("");
   const [chatId, setChatId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const params = useSearchParams();
   const context = useContext(AiModelSelectedContext);
   const { user } = useUser();
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   if (!context) {
     throw new Error("AiModelSelectedContext must be used within a Provider");
   }
   const { selectedModel, messages, setMessages } = context;
 
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = "auto";
+      textAreaRef.current.style.height =
+        textAreaRef.current.scrollHeight + "px";
+    }
+  }, [userInput]);
+
   const GetMessages = useCallback(
-    async (chatId_: string) => {
-      if (!chatId_) return;
+    async (id: string) => {
+      if (!id) return;
       try {
-        const docRef = doc(db, "chatHistory", chatId_);
+        const docRef = doc(db, "chatHistory", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const docData = docSnap.data();
-          setMessages(docData.messages || {});
+          setMessages(docSnap.data().messages || {});
         }
       } catch (error) {
-        console.error("GetMessages error:", error);
+        console.error("Xabarlarni yuklashda xato:", error);
       }
     },
     [setMessages]
   );
 
   useEffect(() => {
-    const chatId_ = params.get("chatId");
-    if (chatId_) {
-      setChatId(chatId_);
-      GetMessages(chatId_);
+    const idFromParams = params.get("chatId");
+    if (idFromParams) {
+      setChatId(idFromParams);
+      GetMessages(idFromParams);
     } else {
       setMessages({});
       setChatId(uuidv4());
@@ -51,14 +62,20 @@ function ChatInputBox() {
   }, [params, GetMessages, setMessages]);
 
   const handleSend = async () => {
-    if (!userInput.trim()) return;
+    if (!userInput.trim() || isLoading) return;
 
     try {
+      setIsLoading(true);
       const result = await axios.post("/api/user-remaining-msg", { token: 1 });
       const remainingToken = result?.data?.remainingToken;
 
       if (remainingToken <= 0) {
-        alert("Limit tugadi. Iltimos, rejangizni yangilang.");
+        toast.error("Limit tugadi!", {
+          description:
+            "Sizning bepul xabarlaringiz tugadi. Iltimos, tarifni yangilang.",
+          position: "top-center",
+        });
+        setIsLoading(false);
         return;
       }
 
@@ -80,126 +97,125 @@ function ChatInputBox() {
         return updated;
       });
 
-      Object.entries(selectedModel).forEach(
-        async ([parentModel, modelInfo]: [string, any]) => {
-          if (!modelInfo.enable || !modelInfo.modelId) return;
+      await Promise.all(
+        Object.entries(selectedModel).map(
+          async ([parentModel, modelInfo]: [string, any]) => {
+            if (!modelInfo.enable || !modelInfo.modelId) return;
 
-          setMessages((prev: any) => ({
-            ...prev,
-            [parentModel]: [
-              ...(prev[parentModel] ?? []),
-              {
-                role: "assistant",
-                content: "Thinking...",
-                model: parentModel,
-                loading: true,
-              },
-            ],
-          }));
-
-          try {
-            const aiResult = await axios.post("/api/ai-multi_model", {
-              model: modelInfo.modelId,
-              msg: [{ role: "user", content: currentInput }],
-              parentModel,
-            });
-
-            const { aiResponse } = aiResult.data;
-
-            setMessages((prev: any) => {
-              const updated = [...(prev[parentModel] ?? [])];
-              const loadingIndex = updated.findIndex((m) => m.loading);
-              if (loadingIndex !== -1) {
-                updated[loadingIndex] = {
-                  role: "assistant",
-                  content: aiResponse,
-                  model: parentModel,
-                  loading: false,
-                };
-              }
-              return { ...prev, [parentModel]: updated };
-            });
-          } catch (err) {
-            console.error(`${parentModel} error:`, err);
             setMessages((prev: any) => ({
               ...prev,
               [parentModel]: [
-                ...(prev[parentModel] ?? []).filter((m: any) => !m.loading),
-                { role: "assistant", content: "⚠️ Error fetching response." },
+                ...(prev[parentModel] ?? []),
+                { role: "assistant", content: "O'ylamoqda...", loading: true },
               ],
             }));
+
+            try {
+              const aiResult = await axios.post("/api/ai-multi_model", {
+                model: modelInfo.modelId,
+                msg: [{ role: "user", content: currentInput }],
+                parentModel,
+              });
+
+              setMessages((prev: any) => {
+                const updated = [...(prev[parentModel] ?? [])];
+                const idx = updated.findIndex((m) => m.loading);
+                if (idx !== -1) {
+                  updated[idx] = {
+                    role: "assistant",
+                    content: aiResult.data.aiResponse,
+                    loading: false,
+                  };
+                }
+                return { ...prev, [parentModel]: updated };
+              });
+            } catch (e) {
+              toast.error(`${parentModel} xatosi`, {
+                description: "Javob olishda muammo bo'ldi.",
+              });
+            }
           }
-        }
+        )
       );
     } catch (error) {
-      console.error("Send error:", error);
+      toast.error("Tizim xatosi", {
+        description: "Server bilan bog'lanishda xatolik.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const SaveMessages = useCallback(async () => {
     if (!chatId || Object.keys(messages).length === 0) return;
     try {
-      const docRef = doc(db, "chatHistory", chatId);
       await setDoc(
-        docRef,
+        doc(db, "chatHistory", chatId),
         {
-          chatId: chatId,
+          chatId,
           userEmail: user?.primaryEmailAddress?.emailAddress || "anonymous",
-          messages: messages,
+          messages,
           lastUpdated: new Date(),
         },
         { merge: true }
       );
-    } catch (error) {
-      console.error("SaveMessages error:", error);
+    } catch (e) {
+      console.error(e);
     }
   }, [chatId, messages, user]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (Object.keys(messages).length > 0) {
-        SaveMessages();
-      }
-    }, 500);
+      if (Object.keys(messages).length > 0) SaveMessages();
+    }, 1000);
     return () => clearTimeout(timeout);
   }, [messages, SaveMessages]);
 
   return (
-    <div className="relative w-full">
-      <div className="flex justify-center fixed bottom-0 left-0 mb-4 px-4 pb-4 w-full bg-transparent">
-        <div className="w-full shadow-lg rounded-xl border bg-background max-w-2xl p-4 flex flex-col gap-3">
-          <input
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-6  ">
+      <div className="max-w-4xl mx-auto">
+        <div className="relative flex flex-col w-full border rounded-2xl bg-card  transition-all border-border/50">
+          <textarea
+            ref={textAreaRef}
             value={userInput}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
             onChange={(e) => setUserInput(e.target.value)}
-            type="text"
-            placeholder="Ask me anything..."
-            className="border-none outline-none bg-transparent w-full text-sm"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="AI dan so'rang..."
+            className="w-full p-4 bg-transparent border-none outline-none resize-none min-h-[50px] max-h-[160px] text-sm md:text-base"
+            rows={1}
           />
-          <div className="flex items-center justify-between">
-            <Button
-              className="cursor-pointer h-8 w-8"
-              variant="ghost"
-              size="icon"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-            <div className="flex gap-2">
+
+          <div className="flex items-center justify-between px-3 py-2 border-t border-border/10">
+            <div className="flex gap-1">
               <Button
-                className="cursor-pointer h-8 w-8"
                 variant="ghost"
                 size="icon"
+                className="h-9 w-9 rounded-xl"
               >
-                <Mic className="h-4 w-4" />
+                <Paperclip className="h-5 w-5 text-muted-foreground" />
               </Button>
               <Button
-                onClick={handleSend}
-                className="cursor-pointer h-8 w-8"
+                variant="ghost"
                 size="icon"
+                className="h-9 w-9 rounded-xl"
               >
-                <Send className="h-4 w-4" />
+                <Mic className="h-5 w-5 text-muted-foreground" />
               </Button>
             </div>
+
+            <Button
+              onClick={handleSend}
+              disabled={!userInput.trim() || isLoading}
+              className="h-9 px-4 rounded-xl gap-2 font-medium active:scale-95 transition-all"
+            >
+              <span className="hidden md:inline">Yuborish</span>
+              <Send className={`h-4 w-4 ${isLoading ? "animate-pulse" : ""}`} />
+            </Button>
           </div>
         </div>
       </div>

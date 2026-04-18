@@ -122,8 +122,8 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
-      <SidebarHeader>
+    <Sidebar className="dark:bg-[#0d1225]">
+      <SidebarHeader className="dark:bg-[#0d1225]">
         <section className="flex items-center justify-between p-3">
           <Image width={60} height={60} src="/next.svg" alt="logo" priority />
           <ModeToggle />
@@ -139,7 +139,7 @@ export function AppSidebar() {
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="dark:bg-[#0d1225]">
         <SidebarGroup>
           <section className="p-3">
             <h1 className="text-lg font-extrabold">Chat History</h1>
@@ -176,7 +176,7 @@ export function AppSidebar() {
         <ProgressBar remainingToken={FreeCount} />
 
         <PricingModal>
-          <Button className="w-full flex gap-2">
+          <Button className="w-full flex gap-2 cursor-pointer">
             <Zap className="size-4 fill-yellow-400" />
             Upgrade Plan
           </Button>
