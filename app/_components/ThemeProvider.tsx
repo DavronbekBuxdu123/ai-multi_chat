@@ -3,10 +3,11 @@
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useUser } from "@clerk/nextjs";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/config/FireBaseConfig";
 import { AiModelSelectedContext } from "@/context/AiModelSelectedContext";
 import { UserDetailContext } from "@/context/UserDetailContext";
+import { DefaultModel } from "@/lists/AiModelsList";
 
 export function ThemeProvider({
   children,
@@ -19,10 +20,22 @@ export function ThemeProvider({
     }
   }, [user]);
 
+  React.useEffect(() => {
+    if (selectedModel) {
+      updateModels();
+    }
+  }, []);
+
+  const updateModels = async () => {
+    const docRef = doc(db, "users", user?.primaryEmailAddress?.emailAddress);
+    await updateDoc(docRef, { selectedModelRef: selectedModel });
+  };
+
   const { selectedModel, setSelectedModel } = React.useContext(
     AiModelSelectedContext
   );
   const { userDetail, setUserDetail } = React.useContext(UserDetailContext);
+
   const CreateNewUser = async () => {
     const email = user?.primaryEmailAddress?.emailAddress;
     if (!email) {
@@ -33,7 +46,7 @@ export function ThemeProvider({
     if (userSnap.exists()) {
       console.log("Mavjud User");
       const userInfo = userSnap.data();
-      setSelectedModel(userInfo?.selectedModelRef);
+      setSelectedModel(userInfo?.selectedModelRef ?? DefaultModel);
       setUserDetail(userInfo);
       return;
     } else {

@@ -8,6 +8,7 @@ import AppHeader from "./_components/AppHeader";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AiModelProvider } from "@/context/AiModelSelectedContext";
 import { UserDetailProvider } from "@/context/UserDetailContext";
+import { Toaster } from "@/components/ui/sonner";
 
 const roboto = Roboto({
   weight: "400",
@@ -44,6 +45,7 @@ export default function RootLayout({
                   <main className="w-full">
                     <AppHeader />
                     {children}
+                    <Toaster />
                   </main>
                 </SidebarProvider>
               </ThemeProvider>

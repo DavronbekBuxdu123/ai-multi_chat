@@ -31,9 +31,70 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ProgressBar from "./ProgressBar";
+import { useContext, useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/config/FireBaseConfig";
+import moment from "moment";
+import Link from "next/link";
+import axios from "axios";
+import { AiModelSelectedContext } from "@/context/AiModelSelectedContext";
 
 export function AppSidebar() {
   const { user } = useUser();
+  const [chatHistory, setChatHistory] = useState([]);
+  const [FreeCount, setFreeCount] = useState(0);
+  const { selectedModel, setSelectedModel, messages, setMessages } = useContext(
+    AiModelSelectedContext
+  );
+  useEffect(() => {
+    user && getChatHistory();
+  }, [user]);
+  useEffect(() => {
+    user && TokenLimit();
+  }, [messages]);
+  const getChatHistory = async () => {
+    const q = query(
+      collection(db, "chatHistory"),
+      where("userEmail", "==", user?.primaryEmailAddress?.emailAddress)
+    );
+    const querySnapshot = await getDocs(q);
+    const historyData = [];
+    querySnapshot.forEach((doc) => {
+      historyData.push({ id: doc.id, ...doc.data() });
+    });
+    setChatHistory(historyData);
+  };
+
+  const GetLastUserMessageFromChat = (chat) => {
+    if (!chat.messages) return { message: "No messages", lastMsgDate: "" };
+    const allMessages = Object.values(chat.messages).flat();
+    const userMessages = allMessages.filter((msg) => msg.role === "user");
+    const lastUserMsg =
+      userMessages.length > 0
+        ? userMessages[userMessages.length - 1].content
+        : "No user message";
+
+    const lastUpdated = chat.lastUpdated?.seconds
+      ? chat.lastUpdated.toDate()
+      : chat.lastUpdated || Date.now();
+
+    const formattedDate = moment(lastUpdated).fromNow();
+
+    return {
+      chatId: chat.chatId,
+      message: lastUserMsg,
+      lastMsgDate: formattedDate,
+    };
+  };
+
+  const TokenLimit = async () => {
+    try {
+      const result = await axios.post("/api/user-remaining-msg");
+      setFreeCount(result.data.remainingToken);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Sidebar>
       <SidebarHeader>
@@ -42,7 +103,9 @@ export function AppSidebar() {
           <ModeToggle />
         </section>
         {user ? (
-          <Button className="cursor-pointer">New Chat + </Button>
+          <Link href={"/"}>
+            <Button className="cursor-pointer w-full">New Chat + </Button>
+          </Link>
         ) : (
           <SignInButton>
             <Button className="cursor-pointer">New Chat + </Button>
@@ -59,12 +122,32 @@ export function AppSidebar() {
                 Accusamus, labore.
               </p>
             )}
+
+            {chatHistory.map((chat, index) => (
+              <Link
+                href={"?chatId=" + chat.chatId}
+                className="mt-2 "
+                key={index}
+              >
+                <div className="hover:bg-gray-100 p-3 cursor-pointer">
+                  {" "}
+                  <h2 className="text-sm text-gray-500 ">
+                    {GetLastUserMessageFromChat(chat).lastMsgDate}
+                  </h2>
+                  <h2 className="text-md line-clamp-1">
+                    {GetLastUserMessageFromChat(chat).message}
+                  </h2>
+                </div>
+
+                <hr />
+              </Link>
+            ))}
           </section>
         </SidebarGroup>
         <SidebarGroup />
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border/50 p-2 dark:bg-[#0d1225]">
-        <ProgressBar />
+        <ProgressBar remainingToken={FreeCount} />
         <Button className="w-full">
           <Zap />
           Upgrade to Plan

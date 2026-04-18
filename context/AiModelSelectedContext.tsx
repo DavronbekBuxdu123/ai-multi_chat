@@ -6,10 +6,10 @@ export const AiModelSelectedContext = createContext<any>(null);
 
 export const AiModelProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState(DefaultModel);
-
+  const [messages, setMessages] = useState({});
   return (
     <AiModelSelectedContext.Provider
-      value={{ selectedModel, setSelectedModel }}
+      value={{ selectedModel, setSelectedModel, messages, setMessages }}
     >
       {children}
     </AiModelSelectedContext.Provider>
