@@ -117,17 +117,9 @@ function AiModelsList() {
             <div
               key={index}
               className={`flex-col border-r h-full overflow-hidden transition-all duration-300 ease-in-out dark:bg-[#0d1225]
-                ${
-                  !model.enable
-                    ? "md:min-w-[100px] hidden md:flex"
-                    : "md:min-w-[400px] flex"
-                } 
-                ${
-                  isVisibleOnMobile
-                    ? "flex w-full min-w-full"
-                    : "hidden md:flex"
-                } 
-              `}
+    ${!model.enable ? "md:min-w-[100px]" : "md:min-w-[400px]"} 
+    ${isVisibleOnMobile ? "flex w-full min-w-full" : "hidden md:flex"} 
+  `}
             >
               <div className="flex items-center justify-between gap-4 border-b w-full p-3 bg-card sticky top-0   dark:bg-[#0d1225]">
                 <div className="flex items-center gap-2">
@@ -190,7 +182,7 @@ function AiModelsList() {
                       <Lock className="text-yellow-600" />
                     </div>
                     <Button size="sm" variant="outline" className="text-xs">
-                      Pro reja
+                      Premium rejim
                     </Button>
                   </div>
                 ) : (

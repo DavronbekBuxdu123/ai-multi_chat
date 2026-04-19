@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { model, msg, parentModel } = await req.json();
+    console.log(model, msg, parentModel);
     const userMessages = Array.isArray(msg)
       ? msg
       : [{ role: "user", content: msg }];
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
         },
       }
     );
+    console.log("API Full Response:", response.data);
 
     return NextResponse.json({
       ...response.data,
