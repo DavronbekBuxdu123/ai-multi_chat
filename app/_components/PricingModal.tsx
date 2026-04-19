@@ -19,7 +19,7 @@ function PricingModal({ children }: { children: ReactNode }) {
         <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-center mb-4 text-xl font-extrabold">
-              Upgrade Plan
+              Rejimni yangilash
             </DialogTitle>
             <DialogDescription>
               <PricingTable />

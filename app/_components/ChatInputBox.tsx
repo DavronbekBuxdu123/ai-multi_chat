@@ -173,13 +173,13 @@ function ChatInputBox() {
 
   return (
     <div
-      className="fixed bottom-0 right-0 z-50 p-3 md:p-6 transition-all duration-300
+      className="fixed dark:bg-[#0d1225] bottom-0 right-0 z-50 p-3 md:p-6 transition-all duration-300
     w-full 
     md:w-[calc(100%-var(--sidebar-width,0px))] 
     peer-data-[state=collapsed]:md:w-[calc(100%-var(--sidebar-width-icon,0px))]  "
     >
       <div className="max-w-4xl mx-auto">
-        <div className="relative flex flex-col w-full border rounded-2xl bg-card  transition-all border-border/50">
+        <div className="relative flex flex-col w-full border rounded-2xl bg-card  transition-all border-border/50 dark:bg-[#0d1225]">
           <textarea
             ref={textAreaRef}
             value={userInput}

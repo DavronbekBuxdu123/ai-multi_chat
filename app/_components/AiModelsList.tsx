@@ -102,7 +102,13 @@ function AiModelsList() {
         </Tabs>
       </div>
 
-      <div className="flex flex-1 overflow-x-auto overflow-y-hidden dark:bg-[#0d1225]">
+      <div
+        className="flex flex-1 overflow-x-auto overflow-y-hidden dark:bg-[#0d1225] [&::-webkit-scrollbar]:w-1.5
+  [&::-webkit-scrollbar-track]:bg-transparent
+  [&::-webkit-scrollbar-thumb]:bg-blue-500/20
+  [&::-webkit-scrollbar-thumb]:rounded-full
+  hover:[&::-webkit-scrollbar-thumb]:bg-blue-500/50"
+      >
         {aiModelsList.map((model, index) => {
           const modelMessages = messages[model.model] || [];
           const isVisibleOnMobile = activeTab === model.model;

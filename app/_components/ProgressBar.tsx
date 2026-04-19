@@ -9,13 +9,13 @@ function ProgressBar({ remainingToken }: { remainingToken: number }) {
 
   return (
     <div className="p-3 rounded-2xl mb-5 border flex flex-col gap-3">
-      <h2 className="text-lg font-extrabold">Free Plan</h2>
-      <p className="text-gray-500">
-        {usedTokens}/{totalTokens} messages used
+      <h2 className="text-lg font-extrabold">Free rejimi</h2>
+      <p className="text-gray-500 text-sm">
+        {usedTokens}/{totalTokens} foydalanilgan xabarlar
       </p>
       <Progress value={progressValue} className="h-2" />
-      <p className="text-xs text-muted-foreground italic">
-        {safeRemaining} messages left
+      <p className="text-sm text-muted-foreground italic">
+        {safeRemaining} xabarlar qoldi
       </p>
     </div>
   );

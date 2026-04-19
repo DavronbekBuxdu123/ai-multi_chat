@@ -42,7 +42,7 @@ export default function RootLayout({
               >
                 <SidebarProvider>
                   <AppSidebar />
-                  <main className="flex-1 min-w-0 flex flex-col">
+                  <main className="flex-1 min-w-0 flex flex-col dark:bg-[#0d1225]">
                     <AppHeader />
                     {children}
                     <Toaster />

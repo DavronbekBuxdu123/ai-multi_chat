@@ -12,7 +12,7 @@ import {
 import Image from "next/image";
 import { ModeToggle } from "./ModeToggle";
 import { Button } from "@/components/ui/button";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { Bell, ChevronDown, LogOut, Settings, User2, Zap } from "lucide-react";
 
 import {
@@ -37,6 +37,7 @@ import Link from "next/link";
 import axios from "axios";
 import { AiModelSelectedContext } from "@/context/AiModelSelectedContext";
 import PricingModal from "./PricingModal";
+import { DavaLogo } from "./Logo";
 
 interface Message {
   role: string;
@@ -125,16 +126,16 @@ export function AppSidebar() {
     <Sidebar className="dark:bg-[#0d1225]">
       <SidebarHeader className="dark:bg-[#0d1225]">
         <section className="flex items-center justify-between p-3">
-          <Image width={60} height={60} src="/next.svg" alt="logo" priority />
+          <DavaLogo />
           <ModeToggle />
         </section>
         {user ? (
           <Link href={"/"}>
-            <Button className="cursor-pointer w-full">New Chat + </Button>
+            <Button className="cursor-pointer w-full">Yangi chat + </Button>
           </Link>
         ) : (
           <SignInButton mode="modal">
-            <Button className="cursor-pointer w-full">New Chat + </Button>
+            <Button className="cursor-pointer w-full">Yangi chat + </Button>
           </SignInButton>
         )}
       </SidebarHeader>
@@ -142,7 +143,7 @@ export function AppSidebar() {
       <SidebarContent className="dark:bg-[#0d1225]">
         <SidebarGroup>
           <section className="p-3">
-            <h1 className="text-lg font-extrabold">Chat History</h1>
+            <h1 className="text-lg font-extrabold">Chatlar tarixi</h1>
             {!user && (
               <p className="text-sm text-gray-500 italic">
                 Tizimga kiring va suhbatlarni ko'ring.
@@ -178,7 +179,7 @@ export function AppSidebar() {
         <PricingModal>
           <Button className="w-full flex gap-2 cursor-pointer">
             <Zap className="size-4 fill-yellow-400" />
-            Upgrade Plan
+            Premium rejimi
           </Button>
         </PricingModal>
 
@@ -205,19 +206,22 @@ export function AppSidebar() {
                     <Settings className="mr-2 size-4" /> Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive cursor-pointer">
-                    <LogOut className="mr-2 size-4" /> Log out
-                  </DropdownMenuItem>
+                  <SignOutButton>
+                    <DropdownMenuItem className="text-destructive cursor-pointer">
+                      <LogOut className="mr-2 size-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </SignOutButton>
                 </DropdownMenuContent>
               </DropdownMenu>
             </SidebarMenuItem>
           </SidebarMenu>
         ) : (
-          <SignInButton mode="modal">
+          <Link href={"/sign-in"}>
             <Button variant="outline" className="w-full">
-              Sign In / Sign Up
+              Kirish
             </Button>
-          </SignInButton>
+          </Link>
         )}
       </SidebarFooter>
     </Sidebar>

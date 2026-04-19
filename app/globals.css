@@ -150,3 +150,40 @@
     --primary: 0 0% 98%;
   }
 }
+
+/* globals.css */
+
+@layer base {
+  /* Scrollbar kengligi - juda nozik */
+  ::-webkit-scrollbar {
+    width: 4px; /* Vertikal uchun */
+    height: 4px; /* Gorizontal uchun */
+  }
+
+  /* Scrollbar yo'li */
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Scrollbar suriluvchi qismi */
+  ::-webkit-scrollbar-thumb {
+    /* Rangni biroz shaffof qilsak, yanada ingichka ko'rinadi */
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  /* Sichqoncha yaqinlashganda yorqinlashadi */
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.4);
+  }
+
+  /* Faqat dark mode uchun alohida sozlamalar (ixtiyoriy) */
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.5);
+  }
+}
