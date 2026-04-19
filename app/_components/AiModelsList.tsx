@@ -82,7 +82,7 @@ function AiModelsList() {
 
   return (
     <div className="flex flex-col flex-1 h-[70vh] border-b bg-background  scrollbar-hide  dark:bg-[#0d1225]">
-      <div className="md:hidden w-full p-2 border-b bg-card overflow-x-auto">
+      <div className="md:hidden w-full p-2 border-b bg-card overflow-x-auto dark:bg-[#0d1225]">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
