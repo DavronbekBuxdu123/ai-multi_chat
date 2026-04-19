@@ -172,7 +172,12 @@ function ChatInputBox() {
   }, [messages, SaveMessages]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-6  ">
+    <div
+      className="fixed bottom-0 right-0 z-50 p-3 md:p-6 transition-all duration-300
+    w-full 
+    md:w-[calc(100%-var(--sidebar-width,0px))] 
+    peer-data-[state=collapsed]:md:w-[calc(100%-var(--sidebar-width-icon,0px))]  "
+    >
       <div className="max-w-4xl mx-auto">
         <div className="relative flex flex-col w-full border rounded-2xl bg-card  transition-all border-border/50">
           <textarea

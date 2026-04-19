@@ -4,7 +4,7 @@ import ChatInputBox from "./_components/ChatInputBox";
 
 export default function Home() {
   return (
-    <div className="scrollbar-hide">
+    <div className="">
       <AiModelsList />
       <Suspense
         fallback={

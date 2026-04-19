@@ -81,14 +81,14 @@ function AiModelsList() {
   };
 
   return (
-    <div className="flex flex-col flex-1 h-[75vh] border-b bg-background  dark:bg-[#0d1225]">
+    <div className="flex flex-col flex-1 h-[70vh] border-b bg-background  scrollbar-hide  dark:bg-[#0d1225]">
       <div className="md:hidden w-full p-2 border-b bg-card overflow-x-auto">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           className="w-full dark:bg-[#0d1225]"
         >
-          <TabsList className="flex w-max gap-2 bg-transparent dark:bg-[#0d1225]">
+          <TabsList className="flex w-max gap-2 bg-transparent  dark:bg-[#0d1225]">
             {aiModelsList.map((model) => (
               <TabsTrigger
                 key={model.model}
@@ -123,7 +123,7 @@ function AiModelsList() {
                 } 
               `}
             >
-              <div className="flex items-center justify-between gap-4 border-b w-full p-3 bg-card sticky top-0  dark:bg-[#0d1225]">
+              <div className="flex items-center justify-between gap-4 border-b w-full p-3 bg-card sticky top-0   dark:bg-[#0d1225]">
                 <div className="flex items-center gap-2">
                   <Image
                     className="rounded-lg"
