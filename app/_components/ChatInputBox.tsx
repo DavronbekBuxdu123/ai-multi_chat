@@ -6,10 +6,15 @@ import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Mic, Paperclip, Send } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner"; // Sonner importi
+import { toast } from "sonner";
+
+interface ModelInfo {
+  enable: boolean;
+  modelId: string;
+}
 
 function ChatInputBox() {
   const [userInput, setUserInput] = useState("");
@@ -17,6 +22,7 @@ function ChatInputBox() {
   const [isLoading, setIsLoading] = useState(false);
 
   const params = useSearchParams();
+  const router = useRouter();
   const context = useContext(AiModelSelectedContext);
   const { user } = useUser();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -26,6 +32,7 @@ function ChatInputBox() {
   }
   const { selectedModel, messages, setMessages } = context;
 
+  // Textarea balandligini avtomatik sozlash
   useEffect(() => {
     if (textAreaRef.current) {
       textAreaRef.current.style.height = "auto";
@@ -66,14 +73,18 @@ function ChatInputBox() {
 
     try {
       setIsLoading(true);
+
       const result = await axios.post("/api/user-remaining-msg", { token: 1 });
       const remainingToken = result?.data?.remainingToken;
 
       if (remainingToken <= 0) {
         toast.error("Limit tugadi!", {
           description:
-            "Sizning bepul xabarlaringiz tugadi. Iltimos, tarifni yangilang.",
-          position: "top-center",
+            "Sizning bepul xabarlaringiz tugadi. Pro rejimga o'ting.",
+          action: {
+            label: "Upgrade",
+            onClick: () => router.push("/dashboard/upgrade"),
+          },
         });
         setIsLoading(false);
         return;
@@ -100,7 +111,8 @@ function ChatInputBox() {
       await Promise.all(
         Object.entries(selectedModel).map(
           async ([parentModel, modelInfo]: [string, any]) => {
-            if (!modelInfo.enable || !modelInfo.modelId) return;
+            const info = modelInfo as ModelInfo;
+            if (!info.enable || !info.modelId) return;
 
             setMessages((prev: any) => ({
               ...prev,
@@ -112,7 +124,7 @@ function ChatInputBox() {
 
             try {
               const aiResult = await axios.post("/api/ai-multi_model", {
-                model: modelInfo.modelId,
+                model: info.modelId,
                 msg: [{ role: "user", content: currentInput }],
                 parentModel,
               });
@@ -160,7 +172,7 @@ function ChatInputBox() {
         { merge: true }
       );
     } catch (e) {
-      console.error(e);
+      console.error("Firestore-ga saqlashda xato:", e);
     }
   }, [chatId, messages, user]);
 
@@ -173,13 +185,13 @@ function ChatInputBox() {
 
   return (
     <div
-      className="fixed dark:bg-[#0d1225] bottom-0 right-0 z-50 p-3 md:p-6 transition-all duration-300
-    w-full 
-    md:w-[calc(100%-var(--sidebar-width,0px))] 
-    peer-data-[state=collapsed]:md:w-[calc(100%-var(--sidebar-width-icon,0px))]  "
+      className="fixed bottom-0 right-0 z-50 p-3 md:p-6 transition-all duration-300
+      w-full 
+      md:w-[calc(100%-var(--sidebar-width,16rem))] 
+      peer-data-[state=collapsed]:md:w-[calc(100%-var(--sidebar-width-icon,3rem))] bg-gradient-to-t from-[#0d1225] via-[#0d1225]/90 to-transparent"
     >
       <div className="max-w-4xl mx-auto">
-        <div className="relative flex flex-col w-full border rounded-2xl bg-card  transition-all border-border/50 dark:bg-[#0d1225]">
+        <div className="relative flex flex-col w-full border rounded-2xl bg-card/80 backdrop-blur-md transition-all border-border/50 dark:bg-[#161b2e]">
           <textarea
             ref={textAreaRef}
             value={userInput}
@@ -191,7 +203,7 @@ function ChatInputBox() {
               }
             }}
             placeholder="AI dan so'rang..."
-            className="w-full p-4 bg-transparent border-none outline-none resize-none min-h-[50px] max-h-[160px] text-sm md:text-base"
+            className="w-full p-4 bg-transparent border-none outline-none resize-none min-h-[50px] max-h-[160px] text-sm md:text-base scrollbar-hide"
             rows={1}
           />
 
@@ -200,14 +212,14 @@ function ChatInputBox() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl"
+                className="h-9 w-9 rounded-xl hover:bg-white/5"
               >
                 <Paperclip className="h-5 w-5 text-muted-foreground" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl"
+                className="h-9 w-9 rounded-xl hover:bg-white/5"
               >
                 <Mic className="h-5 w-5 text-muted-foreground" />
               </Button>
@@ -216,13 +228,23 @@ function ChatInputBox() {
             <Button
               onClick={handleSend}
               disabled={!userInput.trim() || isLoading}
-              className="h-9 px-4 rounded-xl gap-2 font-medium active:scale-95 transition-all"
+              className="h-9 px-4 rounded-xl gap-2 font-medium active:scale-95 transition-all bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
             >
-              <span className="hidden md:inline">Yuborish</span>
-              <Send className={`h-4 w-4 ${isLoading ? "animate-pulse" : ""}`} />
+              {isLoading ? (
+                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span className="hidden md:inline">Yuborish</span>
+                  <Send className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
         </div>
+        <p className="text-[10px] text-center mt-2 text-muted-foreground/50">
+          DavaAi xatoga yo'l qo'yishi mumkin. Muhim ma'lumotlarni tekshirib
+          ko'ring.
+        </p>
       </div>
     </div>
   );
