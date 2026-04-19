@@ -14,17 +14,7 @@ export const AiModels = [
       { name: "GPT 5", premium: true, id: "gpt-5" },
     ],
   },
-  {
-    model: "Gemini",
-    icon: "/gemini.png",
-    premium: false,
-    enable: true,
-    subModel: [
-      { name: "Gemini 2.5 Lite", premium: false, id: "gemini-2.5-lite" },
-      { name: "Gemini 2.5 Flash", premium: false, id: "gemini-2.5-flash" },
-      { name: "Gemini 2.5 Pro", premium: true, id: "gemini-2.5-pro" },
-    ],
-  },
+
   {
     model: "DeepSeek",
     icon: "/deepseek.png",
@@ -47,6 +37,17 @@ export const AiModels = [
         id: "mistral-medium-2505",
       },
       { name: "Mistral Large", premium: true, id: "mistral-large" },
+    ],
+  },
+  {
+    model: "Gemini",
+    icon: "/gemini.png",
+    premium: true,
+    enable: true,
+    subModel: [
+      { name: "Gemini 2.5 Lite", premium: true, id: "gemini-2.5-lite" },
+      { name: "Gemini 2.5 Flash", premium: true, id: "gemini-2.5-flash" },
+      { name: "Gemini 2.5 Pro", premium: true, id: "gemini-2.5-pro" },
     ],
   },
   {
